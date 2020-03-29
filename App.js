@@ -5,6 +5,8 @@ import * as ImagePicker from 'expo-image-picker'
 import * as firebase from 'firebase';
 import ApiKeys from './apiKeys';
 import * as Random from 'expo-random';
+import Constants from 'expo-constants';
+import * as Permissions from 'expo-permissions';
 
 
 if ( !firebase.apps.length ) {
@@ -14,20 +16,46 @@ if ( !firebase.apps.length ) {
 
 export default function App() {
 const [img, setImg] = useState('');
+
+
+
 async function handleImage(){
 
-  const result = await ImagePicker.launchImageLibraryAsync();
+ 
+    const { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
+
+    if(status  !== 'granted'){
+      alert("Nós precisamos da permissão para públicar uma foto!");
+      return;
+    }
+  
+
+  const result = await ImagePicker.launchImageLibraryAsync({
+    mediaTypes: ImagePicker.MediaTypeOptions.Images
+  });
+
+
+  if(result.cancelled){
+    return;
+  }
+
+  if(!result.uri){
+    return;
+  }
+
 
   if(!result.cancelled){
+
     const name = await Random.getRandomBytesAsync(3);
+
     uploadImage(result.uri, name)
       .then( async ()=>{
         Alert.alert("Success");
         try {
-          const response = await fetch(`https://firebasestorage.googleapis.com/v0/b/<SEU APP>.appspot.com/o/${name}`);
+          const response = await fetch(`https://firebasestorage.googleapis.com/v0/b/photos-app-emocionario.appspot.com/o/${name}`);
           const responseJson = await response.json();
            console.log(responseJson);
-           setImg(`https://firebasestorage.googleapis.com/v0/b/<SEU APP>.appspot.com/o/${responseJson.name}?alt=media&token=${responseJson.downloadTokens}`)
+           setImg(`https://firebasestorage.googleapis.com/v0/b/photos-app-emocionario.appspot.com/o/${responseJson.name}?alt=media&token=${responseJson.downloadTokens}`)
         } catch (error) {
           console.error(error);
         }
@@ -36,6 +64,7 @@ async function handleImage(){
         console.log("ERROR => ", error)
         Alert.alert("Error");
       });
+      
     }
 }
 
@@ -53,11 +82,9 @@ async function uploadImage(uri, imageName){
   return (
     <View style={styles.container}>
       <Text>Expo Firebase Image Upload Expo</Text>
-        <Button onPress={handleImage}>
-            <Text>Escolha Image</Text>
-        </Button>
+      <Image source={{uri: img}} style={{margin:25, width: 200, height: 200, borderRadius: 20}} />
 
-        <Image source={{uri: img}} style={{margin:25, width: 200, height: 200}} />
+      <Button title="Escolha uma imagem..." onPress={handleImage}></Button>
     </View>
   );
 }

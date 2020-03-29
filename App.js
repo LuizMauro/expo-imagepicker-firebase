@@ -24,10 +24,10 @@ async function handleImage(){
       .then( async ()=>{
         Alert.alert("Success");
         try {
-          const response = await fetch(`https://firebasestorage.googleapis.com/v0/b/photos-app-emocionario.appspot.com/o/${name}`);
+          const response = await fetch(`https://firebasestorage.googleapis.com/v0/b/<SEU APP>.appspot.com/o/${name}`);
           const responseJson = await response.json();
            console.log(responseJson);
-           setImg(`https://firebasestorage.googleapis.com/v0/b/photos-app-emocionario.appspot.com/o/${responseJson.name}?alt=media&token=${responseJson.downloadTokens}`)
+           setImg(`https://firebasestorage.googleapis.com/v0/b/<SEU APP>.appspot.com/o/${responseJson.name}?alt=media&token=${responseJson.downloadTokens}`)
         } catch (error) {
           console.error(error);
         }
